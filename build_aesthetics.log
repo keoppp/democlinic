@@ -1,0 +1,22 @@
+
+> systembook-medical@0.1.0 build
+> next build
+
+笆ｲ Next.js 16.1.7 (Turbopack)
+
+  Creating an optimized production build ...
+笨・Compiled successfully in 2.4s
+  Running TypeScript ...
+Failed to compile.
+
+./src/app/page.tsx:211:20
+Type error: Cannot find name 'Phone'.
+
+  209 |                 </div>
+  210 |                 <div className="flex items-start gap-3">
+> 211 |                   <Phone className="w-5 h-5 text-[#C1A476] shrink-0 mt-0.5" />
+      |                    ^
+  212 |                   <div>
+  213 |                     <div className="font-bold text-[#004488] tracking-wider text-xs mb-1.5 uppercase">Telephone</div>
+  214 |                     <div className="text-xl font-bold tracking-widest text-[#C1A476]">{CLINIC_INFO.phone}</div>
+Next.js build worker exited with code: 1 and signal: null

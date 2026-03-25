@@ -1,26 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ========================================
+   Academic DX — Base Layer
+   ======================================== */
+@layer base {
+  body {
+    background-color: #FFFFFF;
+    color: #1a1a1a;
+    font-family: 'Noto Sans JP', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ========================================
+   Academic DX — Utility Classes
+   ======================================== */
+@layer utilities {
+  .text-academic-navy {
+    color: #004488;
+  }
+
+  .bg-academic-navy {
+    background-color: #004488;
+  }
+
+  .text-academic-gold {
+    color: #C1A476;
+  }
+
+  .bg-academic-gold {
+    background-color: #C1A476;
+  }
+
+  .border-academic-gold {
+    border-color: #C1A476;
+  }
+
+  .border-academic-navy {
+    border-color: #004488;
+  }
+
+  .heading-academic {
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #003366;
+  }
+
+  .body-academic {
+    color: #222222;
+    line-height: 1.8;
+  }
+
+  .badge-important {
+    background-color: #DC2626;
+    color: #fff;
+  }
+
+  .badge-info {
+    background-color: #004488;
+    color: #fff;
+  }
+
+  .badge-closed {
+    background-color: #6B7280;
+    color: #fff;
+  }
+
+  .badge-recruit {
+    background-color: #059669;
+    color: #fff;
+  }
+}
+
+/* ========================================
+   Academic DX — Component Layer
+   ======================================== */
+@layer components {
+
+  .btn-academic-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 2rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    color: #fff;
+    background: linear-gradient(135deg, #C1A476 0%, #A98E63 100%);
+    box-shadow: 0 2px 8px rgba(193, 164, 118, 0.35);
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-academic-primary:hover {
+    background: linear-gradient(135deg, #B89A6C 0%, #9A7F56 100%);
+    box-shadow: 0 4px 16px rgba(193, 164, 118, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-academic-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    color: #004488;
+    background: transparent;
+    border: 2px solid #004488;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .btn-academic-secondary:hover {
+    background: #004488;
+    color: #fff;
+  }
+
+  .divider-gold {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #C1A476 30%, #C1A476 70%, transparent 100%);
+    border: none;
+    margin: 0;
+  }
 }
