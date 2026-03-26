@@ -20,9 +20,10 @@ export default function WaitingStatus() {
             if (res.ok) {
                 const data = await res.json();
                 if (data.available) {
+                    const count = Number(data.waitingCount) || 0;
                     setStatus({
                         available: true,
-                        waitTimeMinutes: data.waitTimeMinutes,
+                        waitTimeMinutes: String(count * 4),
                         waitingCount: data.waitingCount,
                         statusMessage: data.statusMessage || '現在、通常通りご案内しております。',
                         lastUpdated: new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
