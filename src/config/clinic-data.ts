@@ -6,11 +6,11 @@ export const N8N_CONFIG = {
   // ① 予約フォーム用 Webhook (POST)
   // [送信内容] name, phone, email, dob, reserveDate, reserveTime, mainSymptom
   // [n8n側で返す必須JSON] { "reservationId": "任意のID文字列", "message": "完了メッセージ" }
-  RESERVATION_WEBHOOK_URL: "https://n8n.systembook-medical.com/webhook/clinic",
+  RESERVATION_WEBHOOK_URL: "https://n8n.my-clinic-de.com/webhook/clinic",
 
   // ② 待ち時間表示用 (GET) Webhook — 30秒ポーリング
   // [n8n側で返す必須JSON] { "waitTimeMinutes": 15, "waitingCount": 4, "statusMessage": "現在スムーズです" }
-  WAITING_STATUS_WEBHOOK_URL: "https://n8n.systembook-medical.com/webhook/get-waiting-count",
+  WAITING_STATUS_WEBHOOK_URL: "https://n8n.my-clinic-de.com/webhook/get-waiting-count",
 
   // ③ 問診票用 顧客データ取得 Webhook (GET)
   // [URLに付与] ?reservationId=RSV-1234
