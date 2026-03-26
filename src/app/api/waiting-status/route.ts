@@ -9,10 +9,20 @@ export async function GET() {
             const n8nResponse = await fetch(webhookUrl, { next: { revalidate: 0 } });
             if (n8nResponse.ok) {
                 const data = await n8nResponse.json();
-                return NextResponse.json({ available: true, ...data });
+                console.log("[n8n waiting-status] Raw response:", JSON.stringify(data));
+                // n8nのレスポンスからwaitingCountを取得（様々なキー名に対応）
+                const waitingCount = data.waitingCount ?? data.waiting_count ?? data.count ?? data.人数 ?? null;
+                return NextResponse.json({
+                    available: true,
+                    waitingCount: waitingCount,
+                    statusMessage: data.statusMessage ?? data.status_message ?? data.message ?? '',
+                    rawResponse: data
+                });
+            } else {
+                console.error("[n8n waiting-status] HTTP Error:", n8nResponse.status);
             }
         } catch (error) {
-            console.error("n8n Webhook Error (Waiting Status):", error);
+            console.error("[n8n waiting-status] Fetch Error:", error);
         }
     }
 
