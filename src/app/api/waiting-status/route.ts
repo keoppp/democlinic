@@ -11,12 +11,14 @@ export async function GET() {
                 const data = await n8nResponse.json();
                 console.log("[n8n waiting-status] Raw response:", JSON.stringify(data));
                 // n8nのレスポンスからwaitingCountを取得（様々なキー名に対応）
-                const waitingCount = data.waitingCount ?? data.waiting_count ?? data.count ?? data.人数 ?? null;
+                const waitingCount = Number(data.waitingCount ?? data.waiting_count ?? data.count ?? 0);
+                // 待ち時間 = 待ち人数 × 4分
+                const waitTimeMinutes = waitingCount * 4;
                 return NextResponse.json({
                     available: true,
                     waitingCount: waitingCount,
-                    statusMessage: data.statusMessage ?? data.status_message ?? data.message ?? '',
-                    rawResponse: data
+                    waitTimeMinutes: waitTimeMinutes,
+                    statusMessage: data.statusMessage ?? data.status_message ?? data.message ?? '現在、通常通りご案内しております。'
                 });
             } else {
                 console.error("[n8n waiting-status] HTTP Error:", n8nResponse.status);
@@ -26,7 +28,7 @@ export async function GET() {
         }
     }
 
-    // n8n未応答・未設定時はデータなしを返す（モックデータは表示しない）
+    // n8n未応答・未設定時はデータなしを返す
     return NextResponse.json({
         available: false,
         statusMessage: '現在、待ち情報を取得できません。受付窓口にお尋ねください。'
