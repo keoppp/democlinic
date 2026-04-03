@@ -14,6 +14,8 @@ function QuestionnaireForm() {
     const { register, handleSubmit, setValue, watch, trigger } = useForm();
 
     const reservationId = searchParams.get('id');
+    const reservationMessage = searchParams.get('message');
+    const triageResult = searchParams.get('triage');
     const [customerData, setCustomerData] = useState({ name: '', phone: '', dob: '' });
     const [isLoadingData, setIsLoadingData] = useState(false);
 
@@ -114,6 +116,31 @@ function QuestionnaireForm() {
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-12">
+
+                {/* n8n Reservation Confirmation Banner */}
+                {reservationMessage && (
+                    <div className="bg-white border border-gray-200 shadow-sm mb-12 overflow-hidden">
+                        <div className="bg-[#003366] px-8 py-4 flex items-center gap-3">
+                            <CheckCircle2 className="w-6 h-6 text-[#C1A476]" />
+                            <h3 className="text-white font-bold tracking-wider">ご予約を承りました</h3>
+                        </div>
+                        <div className="p-8 space-y-4">
+                            <div className="flex items-start gap-4">
+                                <div className="bg-[#F8F9FA] border-l-4 border-[#003366] px-5 py-3">
+                                    <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Reservation ID</p>
+                                    <p className="text-xl font-mono font-bold text-[#003366] tracking-widest">{reservationId}</p>
+                                </div>
+                            </div>
+                            <p className="text-gray-700 leading-relaxed text-sm">{reservationMessage}</p>
+                            {triageResult && (
+                                <div className="bg-amber-50 border border-amber-200 rounded-lg px-5 py-4">
+                                    <p className="text-xs font-bold text-amber-700 tracking-wide mb-1">AIトリアージ判定</p>
+                                    <p className="text-amber-900 font-bold text-sm leading-relaxed">{triageResult}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Step Progress Tracker */}
                 <div className="flex items-center justify-center gap-4 mb-16">

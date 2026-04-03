@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { CLINIC_INFO } from '@/config/clinic-data';
-import { ChevronRight, AlertTriangle, CheckCircle2, PhoneCall, CalendarHeart, ClipboardList } from 'lucide-react';
-import Link from 'next/link';
+import { ChevronRight, AlertTriangle, PhoneCall } from 'lucide-react';
 
 export default function ReservationPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const [successData, setSuccessData] = useState<{ id: string, message: string, triageResult: string | null } | null>(null);
+
 
     // Setup form
     const { register, handleSubmit, control, watch, formState: { errors } } = useForm({
@@ -65,11 +64,14 @@ export default function ReservationPage() {
             const result = await res.json();
 
             if (result.success) {
-                setSuccessData({
+                // n8nからの応答を受け取ったら、問診ページへ直接遷移
+                const params = new URLSearchParams({
                     id: result.reservationId,
-                    message: result.message,
-                    triageResult: result.triageResult || null,
+                    message: result.message || '',
+                    ...(result.triageResult ? { triage: result.triageResult } : {})
                 });
+                router.push(`/questionnaire?${params.toString()}`);
+                return;
             } else {
                 throw new Error(result.message || '予約の送信に失敗しました。');
             }
@@ -81,61 +83,7 @@ export default function ReservationPage() {
         }
     };
 
-    const handleProceedToQuestionnaire = () => {
-        if (!successData) return;
-        const params = new URLSearchParams({ id: successData.id });
-        router.push(`/questionnaire?${params.toString()}`);
-    };
 
-    // --- Success UI ---
-    if (successData) {
-        return (
-            <div className="w-full bg-[#F8F9FA] py-20 md:py-32">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6">
-                    <div className="bg-white p-12 md:p-20 text-center border-t border-gray-200">
-                        <CheckCircle2 className="w-16 h-16 text-academic-gold mx-auto mb-8" />
-                        <h2 className="heading-academic text-3xl mb-4">オンライン初診予約を承りました</h2>
-                        <p className="body-academic mb-12">
-                            {successData.message}
-                        </p>
-
-                        <div className="bg-[#F8F9FA] p-8 inline-block text-left border-l-4 border-academic-navy mb-10">
-                            <p className="text-sm font-bold text-academic-navy mb-2 tracking-widest uppercase">Reservation ID</p>
-                            <p className="text-3xl font-mono tracking-widest text-[#003366]">{successData.id}</p>
-                        </div>
-
-                        {successData.triageResult && (
-                            <div className="bg-amber-50 border border-amber-300 rounded-lg p-6 mb-16 max-w-lg mx-auto text-left">
-                                <p className="text-sm font-bold text-amber-800 mb-2 tracking-wide">AIトリアージ判定</p>
-                                <p className="text-amber-900 font-bold text-base leading-relaxed">{successData.triageResult}</p>
-                            </div>
-                        )}
-
-                        <div className="border-t border-gray-100 pt-16">
-                            <h3 className="heading-academic text-xl mb-6 flex items-center justify-center gap-3">
-                                <ClipboardList className="w-6 h-6 text-academic-gold" />
-                                【任意】事前のオンライン問診にご協力ください
-                            </h3>
-                            <p className="body-academic mb-10 max-w-xl mx-auto text-sm">
-                                事前に問診票をご入力いただくことで、来院時のカルテ作成や待ち時間を大幅に短縮でき、よりスムーズなご案内が可能となります。
-                            </p>
-                            <button
-                                onClick={handleProceedToQuestionnaire}
-                                className="inline-flex items-center justify-center gap-3 bg-academic-navy hover:bg-[#002244] text-white font-bold py-5 px-12 transition-colors tracking-widest mb-6"
-                            >
-                                オンライン問診へ進む（所要時間：約2分） <ChevronRight className="w-5 h-5" />
-                            </button>
-                            <div className="block mt-4">
-                                <Link href="/" className="text-sm text-slate-400 hover:text-academic-navy transition-colors font-medium tracking-wide">
-                                    トップページへ戻る
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     // --- Form UI ---
     return (
