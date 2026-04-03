@@ -11,7 +11,7 @@ export default function ReservationPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const [successData, setSuccessData] = useState<{ id: string, name: string, phone: string, dob: string } | null>(null);
+    const [successData, setSuccessData] = useState<{ id: string, message: string, triageResult: string | null } | null>(null);
 
     // Setup form
     const { register, handleSubmit, control, watch, formState: { errors } } = useForm({
@@ -67,9 +67,8 @@ export default function ReservationPage() {
             if (result.success) {
                 setSuccessData({
                     id: result.reservationId,
-                    name: data.name,
-                    phone: data.phone,
-                    dob: data.dob
+                    message: result.message,
+                    triageResult: result.triageResult || null,
                 });
             } else {
                 throw new Error(result.message || '予約の送信に失敗しました。');
@@ -97,14 +96,20 @@ export default function ReservationPage() {
                         <CheckCircle2 className="w-16 h-16 text-academic-gold mx-auto mb-8" />
                         <h2 className="heading-academic text-3xl mb-4">オンライン初診予約を承りました</h2>
                         <p className="body-academic mb-12">
-                            ご入力いただいた内容をオンラインで受け付けました。<br />
-                            当日はお気をつけてお越しくださいませ。
+                            {successData.message}
                         </p>
 
-                        <div className="bg-[#F8F9FA] p-8 inline-block text-left border-l-4 border-academic-navy mb-16">
+                        <div className="bg-[#F8F9FA] p-8 inline-block text-left border-l-4 border-academic-navy mb-10">
                             <p className="text-sm font-bold text-academic-navy mb-2 tracking-widest uppercase">Reservation ID</p>
                             <p className="text-3xl font-mono tracking-widest text-[#003366]">{successData.id}</p>
                         </div>
+
+                        {successData.triageResult && (
+                            <div className="bg-amber-50 border border-amber-300 rounded-lg p-6 mb-16 max-w-lg mx-auto text-left">
+                                <p className="text-sm font-bold text-amber-800 mb-2 tracking-wide">AIトリアージ判定</p>
+                                <p className="text-amber-900 font-bold text-base leading-relaxed">{successData.triageResult}</p>
+                            </div>
+                        )}
 
                         <div className="border-t border-gray-100 pt-16">
                             <h3 className="heading-academic text-xl mb-6 flex items-center justify-center gap-3">

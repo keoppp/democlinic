@@ -5,55 +5,57 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
-    // ① 設定ファイルから n8n Webhook URL を取得して使用するロジック
     const webhookUrl = N8N_CONFIG.RESERVATION_WEBHOOK_URL;
 
-    if (webhookUrl) {
-      // 実際の実装パターン (n8nがある場合)
-      const n8nResponse = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          type: 'INITIAL_VISIT',
-          timestamp: new Date().toISOString()
-        })
-      });
+    if (!webhookUrl) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Webhook URLが設定されていません。管理者にお問い合わせください。'
+        },
+        { status: 500 }
+      );
+    }
 
-      if (!n8nResponse.ok) {
-        throw new Error(`n8n responded with status: ${n8nResponse.status}`);
-      }
+    // n8n Webhook へ POST し、レスポンスを待機する
+    const n8nResponse = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...data,
+        type: 'INITIAL_VISIT',
+        timestamp: new Date().toISOString()
+      })
+    });
 
-      // n8nからのレスポンスをJSONとして読み込み、そのままフロントエンドに返す
-      const n8nData = await n8nResponse.json();
+    if (!n8nResponse.ok) {
+      throw new Error(`n8n responded with status: ${n8nResponse.status}`);
+    }
+
+    // n8n からのレスポンスをそのまま読み取る
+    const n8nData = await n8nResponse.json();
+
+    // n8n の status フィールドで成功/失敗を判定
+    if (n8nData.status === 'success') {
       return NextResponse.json({
         success: true,
-        reservationId: n8nData.reservationId || `RSV-N8N-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-        message: n8nData.message || 'n8n経由で予約を受け付けました。',
-        ...n8nData
+        reservationId: n8nData.reservation_id,
+        message: n8nData.message,
+        triageResult: n8nData.triage_result || null,
       });
     }
 
-    // デモ用処理: 擬似的な遅延と予約IDの発行
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    // ユーザー要件: 予約ID (例: RSV-0318-ABCD)
-    const dateStr = new Date().toISOString().slice(5, 10).replace('-', '');
-    const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const reservationId = `RSV-${dateStr}-${randomStr}`;
-
+    // n8n が success 以外を返した場合
     return NextResponse.json({
-      success: true,
-      reservationId,
-      message: '予約情報を受け付けました。'
-    });
+      success: false,
+      message: n8nData.message || '予約処理に失敗しました。',
+    }, { status: 400 });
 
   } catch (error) {
     console.error('Webhook Error (Reservation):', error);
-    // ユーザー要件: メンテナンス中などのエラーハンドリング
     return NextResponse.json(
       {
         success: false,
-        error: 'System Error',
         message: '現在メンテナンス中です。お急ぎの方はお電話にてご連絡ください。'
       },
       { status: 503 }
