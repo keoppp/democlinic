@@ -299,7 +299,7 @@ export default function ReservationPage() {
                                                             type="button"
                                                             onClick={() => field.onChange(time)}
                                                             className={`py-3 px-2 border text-sm font-mono transition-all ${field.value === time
-                                                                ? 'bg-toranomon-navy text-white border-toranomon-navy'
+                                                                ? 'bg-[#C1A476] text-white border-[#C1A476] font-bold ring-2 ring-[#C1A476] ring-offset-2 shadow-md scale-105'
                                                                 : 'bg-[#fcfcfc] text-toranomon-navy border-gray-300 hover:border-toranomon-gold hover:text-toranomon-gold'
                                                                 }`}
                                                         >
@@ -342,7 +342,7 @@ export default function ReservationPage() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className={`group relative bg-toranomon-navy text-white font-bold py-6 px-16 text-lg tracking-[0.2em] transition-all overflow-hidden ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#002244]'}`}
+                            className={`group relative font-bold py-6 px-16 text-lg tracking-[0.2em] transition-all overflow-hidden ${isSubmitting ? 'bg-gray-400 text-white opacity-70 cursor-not-allowed' : 'bg-[#C1A476] hover:bg-[#a8905f] text-white shadow-lg hover:shadow-xl'}`}
                         >
                             {isSubmitting ? (
                                 <span className="flex items-center gap-3">
