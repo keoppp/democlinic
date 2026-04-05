@@ -9,10 +9,7 @@ export async function POST(request: Request) {
 
     if (!webhookUrl) {
       return NextResponse.json(
-        {
-          success: false,
-          message: 'Webhook URLが設定されていません。管理者にお問い合わせください。'
-        },
+        { success: false, message: 'Webhook URLが設定されていません。' },
         { status: 500 }
       );
     }
@@ -28,36 +25,43 @@ export async function POST(request: Request) {
       })
     });
 
-    if (!n8nResponse.ok) {
-      throw new Error(`n8n responded with status: ${n8nResponse.status}`);
+    // レスポンスボディを取得（ステータスに関わらず読み取る）
+    let n8nRaw: any;
+    try {
+      n8nRaw = await n8nResponse.json();
+    } catch {
+      // JSONパース失敗
+      return NextResponse.json(
+        { success: false, message: 'n8nからの応答を解析できませんでした。' },
+        { status: 502 }
+      );
     }
 
-    // n8n からのレスポンスをそのまま読み取る
-    const n8nData = await n8nResponse.json();
+    // n8n が配列で返す場合があるので先頭を取り出す
+    const n8nData = Array.isArray(n8nRaw) ? n8nRaw[0] : n8nRaw;
 
-    // n8n の status フィールドで成功/失敗を判定
-    if (n8nData.status === 'success') {
+    console.log('[API /reservation] n8n HTTP:', n8nResponse.status, 'Body:', JSON.stringify(n8nData));
+
+    // 成功判定: n8n の status === "success" をチェック
+    if (n8nData && (n8nData.status === 'success' || n8nData.success === true)) {
       return NextResponse.json({
         success: true,
-        reservationId: n8nData.reservation_id,
-        message: n8nData.message,
-        triageResult: n8nData.triage_result || null,
+        reservationId: n8nData.reservation_id || n8nData.reservationId,
+        message: n8nData.message || 'ご予約を承りました。',
+        triageResult: n8nData.triage_result || n8nData.triageResult || null,
       });
     }
 
-    // n8n が success 以外を返した場合
+    // 成功でない場合
     return NextResponse.json({
       success: false,
-      message: n8nData.message || '予約処理に失敗しました。',
-    }, { status: 400 });
+      message: n8nData?.message || '予約処理に失敗しました。',
+    }, { status: n8nResponse.ok ? 200 : n8nResponse.status });
 
   } catch (error) {
     console.error('Webhook Error (Reservation):', error);
     return NextResponse.json(
-      {
-        success: false,
-        message: '現在メンテナンス中です。お急ぎの方はお電話にてご連絡ください。'
-      },
+      { success: false, message: '現在メンテナンス中です。お急ぎの方はお電話にてご連絡ください。' },
       { status: 503 }
     );
   }

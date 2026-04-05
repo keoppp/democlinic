@@ -55,29 +55,36 @@ export default function ReservationPage() {
             const res = await fetch('/api/webhook/reservation', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...data,
-                    // Format dob to YYYY-MM-DD if needed automatically
-                }),
+                body: JSON.stringify(data),
             });
 
-            const result = await res.json();
+            const raw = await res.json();
+            // n8n may return an array — unwrap it
+            const result = Array.isArray(raw) ? raw[0] : raw;
 
-            if (result.success) {
-                // n8nからの応答を受け取ったら、問診ページへ直接遷移
+            console.log('[Reservation] HTTP status:', res.status, 'Body:', result);
+
+            // 成功判定: API wrapper の success フラグ OR n8n 直レスポンスの status フラグ
+            const isSuccess = result.success === true || result.status === 'success';
+            const reservationId = result.reservationId || result.reservation_id;
+            const message = result.message || '';
+            const triageResult = result.triageResult || result.triage_result || '';
+
+            if (isSuccess && reservationId) {
                 const params = new URLSearchParams({
-                    id: result.reservationId,
-                    message: result.message || '',
-                    ...(result.triageResult ? { triage: result.triageResult } : {})
+                    id: reservationId,
+                    message,
+                    ...(triageResult ? { triage: triageResult } : {})
                 });
                 router.push(`/questionnaire?${params.toString()}`);
                 return;
-            } else {
-                throw new Error(result.message || '予約の送信に失敗しました。');
             }
+
+            // ここに来た場合はエラー
+            setSubmitError(result.message || '予約の送信に失敗しました。');
         } catch (error: any) {
             console.error('Reservation error:', error);
-            setSubmitError(error.message || '現在システムメンテナンス中です。お電話にてご連絡ください。');
+            setSubmitError('通信エラーが発生しました。お手数ですがお電話にてご連絡ください。');
         } finally {
             setIsSubmitting(false);
         }
