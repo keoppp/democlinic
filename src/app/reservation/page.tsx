@@ -58,7 +58,6 @@ export default function ReservationPage() {
                 body: JSON.stringify(data),
             });
 
-            // レスポンスをテキストで取得（JSON parse失敗に備える）
             const rawText = await res.text();
             console.log('[Reservation] Raw response:', rawText);
 
@@ -66,38 +65,36 @@ export default function ReservationPage() {
             try {
                 parsed = JSON.parse(rawText);
             } catch {
-                setSubmitError(`レスポンスの解析に失敗しました。\n[DEBUG] ${rawText.substring(0, 300)}`);
+                setSubmitError('予約システムからの応答を解析できませんでした。お電話にてご連絡ください。');
                 return;
             }
 
-            // n8n が配列で返す場合があるので先頭を取り出す
+            // n8n が配列で返す場合
             const result = Array.isArray(parsed) ? parsed[0] : parsed;
 
-            console.log('[Reservation] Parsed result:', result);
+            // エラー判定: status が明示的に "error" / "fail" の場合のみエラー
+            const isExplicitError = result.status === 'error' || result.status === 'fail' || result.success === false;
 
-            // 成功判定: reservation_id があれば成功とみなす（最も確実な判定基準）
-            const reservationId = result.reservation_id || result.reservationId;
-
-            if (reservationId) {
-                const message = result.message || '';
-                const triageResult = result.triage_result || result.triageResult || '';
-                const params = new URLSearchParams({
-                    id: String(reservationId),
-                    message: String(message),
-                    ...(triageResult ? { triage: String(triageResult) } : {}),
-                });
-                router.push(`/questionnaire?${params.toString()}`);
+            if (isExplicitError) {
+                setSubmitError(result.message || '予約処理に失敗しました。');
                 return;
             }
 
-            // reservation_id がない場合はエラー表示（デバッグ用に生データを表示）
-            setSubmitError(
-                (result.message || '予約の送信に失敗しました。') +
-                `\n\n[DEBUG] status=${result.status}, keys=${Object.keys(result).join(',')}, raw=${JSON.stringify(result).substring(0, 200)}`
-            );
+            // ここに来た = エラーではない → 成功として問診ページへ遷移
+            const reservationId = result.reservation_id || result.reservationId || '';
+            const message = result.message || 'ご予約を承りました。';
+            const triageResult = result.triage_result || result.triageResult || '';
+
+            const params = new URLSearchParams({
+                id: String(reservationId),
+                message: String(message),
+                ...(triageResult ? { triage: String(triageResult) } : {}),
+            });
+            router.push(`/questionnaire?${params.toString()}`);
+
         } catch (error: any) {
             console.error('Reservation error:', error);
-            setSubmitError(`通信エラー: ${error?.message || '不明なエラー'}`);
+            setSubmitError('通信エラーが発生しました。お手数ですがお電話にてご連絡ください。');
         } finally {
             setIsSubmitting(false);
         }

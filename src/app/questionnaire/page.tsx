@@ -44,7 +44,7 @@ function QuestionnaireForm() {
         }
     }, [reservationId, setValue]);
 
-    if (!reservationId) {
+    if (!reservationId && !reservationMessage) {
         return (
             <div className="flex flex-col items-center justify-center py-32 px-4 max-w-2xl mx-auto text-center">
                 <Lock className="h-12 w-12 text-academic-navy mb-6" />
