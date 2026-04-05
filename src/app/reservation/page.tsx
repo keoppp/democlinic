@@ -58,33 +58,46 @@ export default function ReservationPage() {
                 body: JSON.stringify(data),
             });
 
-            const raw = await res.json();
-            // n8n may return an array — unwrap it
-            const result = Array.isArray(raw) ? raw[0] : raw;
+            // レスポンスをテキストで取得（JSON parse失敗に備える）
+            const rawText = await res.text();
+            console.log('[Reservation] Raw response:', rawText);
 
-            console.log('[Reservation] HTTP status:', res.status, 'Body:', result);
+            let parsed: any;
+            try {
+                parsed = JSON.parse(rawText);
+            } catch {
+                setSubmitError(`レスポンスの解析に失敗しました。\n[DEBUG] ${rawText.substring(0, 300)}`);
+                return;
+            }
 
-            // 成功判定: API wrapper の success フラグ OR n8n 直レスポンスの status フラグ
-            const isSuccess = result.success === true || result.status === 'success';
-            const reservationId = result.reservationId || result.reservation_id;
-            const message = result.message || '';
-            const triageResult = result.triageResult || result.triage_result || '';
+            // n8n が配列で返す場合があるので先頭を取り出す
+            const result = Array.isArray(parsed) ? parsed[0] : parsed;
 
-            if (isSuccess && reservationId) {
+            console.log('[Reservation] Parsed result:', result);
+
+            // 成功判定: reservation_id があれば成功とみなす（最も確実な判定基準）
+            const reservationId = result.reservation_id || result.reservationId;
+
+            if (reservationId) {
+                const message = result.message || '';
+                const triageResult = result.triage_result || result.triageResult || '';
                 const params = new URLSearchParams({
-                    id: reservationId,
-                    message,
-                    ...(triageResult ? { triage: triageResult } : {})
+                    id: String(reservationId),
+                    message: String(message),
+                    ...(triageResult ? { triage: String(triageResult) } : {}),
                 });
                 router.push(`/questionnaire?${params.toString()}`);
                 return;
             }
 
-            // ここに来た場合はエラー
-            setSubmitError(result.message || '予約の送信に失敗しました。');
+            // reservation_id がない場合はエラー表示（デバッグ用に生データを表示）
+            setSubmitError(
+                (result.message || '予約の送信に失敗しました。') +
+                `\n\n[DEBUG] status=${result.status}, keys=${Object.keys(result).join(',')}, raw=${JSON.stringify(result).substring(0, 200)}`
+            );
         } catch (error: any) {
             console.error('Reservation error:', error);
-            setSubmitError('通信エラーが発生しました。お手数ですがお電話にてご連絡ください。');
+            setSubmitError(`通信エラー: ${error?.message || '不明なエラー'}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -110,7 +123,7 @@ export default function ReservationPage() {
                     <div className="bg-red-50 p-6 mb-12 border-l-4 border-red-600 flex gap-4 items-start">
                         <AlertTriangle className="w-6 h-6 text-red-600 shrink-0" />
                         <div>
-                            <h3 className="text-red-800 font-bold mb-2">{submitError}</h3>
+                            <h3 className="text-red-800 font-bold mb-2 whitespace-pre-wrap">{submitError}</h3>
                             <p className="text-red-700 text-sm leading-relaxed mb-4">
                                 大変恐れ入りますが、現在オンライン予約システムが混み合っているか、メンテナンス中です。<br />
                                 お急ぎの方は、お電話にて直接ご予約をお願いいたします。
