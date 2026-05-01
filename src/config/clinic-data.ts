@@ -85,7 +85,7 @@ export const IMAGES = {
   // ▼ トップページ：ヒーローセクション背景（画面幅いっぱいの大画像）
   heroBackground: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop",
   // ▼ 医師紹介ページ：院長の宣材写真（左側に縦長で表示）
-  directorPortrait: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=1000&auto=format&fit=crop",
+  directorPortrait: "/images/director.jpg",
   // ▼ トップページ＆診療案内：施設外観写真（カード内に表示）
   facilityExterior: "https://images.unsplash.com/photo-1587370560942-ad2a04eabb6d?q=80&w=1000&auto=format&fit=crop",
   // ▼ トップページ：診療風景（カード内に表示）
